@@ -593,6 +593,9 @@ startup
         print("[Super Metroid Autosplitter] "+text);
     };
     vars.DebugOutput = DebugOutput;
+
+    // Timestamp when the last split was executed (to prevent double-splits)
+    vars.lastSplit = 0;
 }
 
 init
@@ -1072,7 +1075,20 @@ split
         vars.DebugOutput("Split due to non standard category finish");
     }
 
-    return pickup || unlock || beam || energyUpgrade || roomTransitions || minibossDefeat || bossDefeat || escape || takeoff || nonStandardCategoryFinish;
+    // Add Double-Split protection (2.5s)
+    var splitDetected =  pickup || unlock || beam || energyUpgrade || roomTransitions || minibossDefeat || bossDefeat || escape || takeoff || nonStandardCategoryFinish;
+    if (splitDetected)
+    {
+        if (Environment.TickCount - vars.lastSplit > 2500) {
+            vars.lastSplit = Environment.TickCount;
+            return true;
+        }
+        else {
+            vars.DebugOutput("Split Prevented (Cooldown): ");
+        }
+    }
+
+    return false;
 }
 
 gameTime
